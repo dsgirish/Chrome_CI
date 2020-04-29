@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<testsuites disabled="0" errors="1" failures="1" tests="5" time="0.05">
+	<testsuite disabled="0" errors="1" failures="1" name="UserCrash" skipped="0" tests="5" time="0.05">
+		<testcase classname="functional_categoryA" name="THIS_IS_A-TEST_1.2-ID001" time="0.010000">
+			<system-out>2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-ID001', '``PASSED``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']</system-out>
+			<system-err>I am stderr!</system-err>
+		</testcase>
+		<testcase classname="functional_categoryA" name="THIS_IS_A-TEST_1.2-logging_UserCrash" time="0.010000">
+			<system-out>2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-logging_UserCrash', '``Pass``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']</system-out>
+			<system-err>I am stderr!</system-err>
+		</testcase>
+		<testcase classname="functional_categoryA" name="THIS_IS_A-TEST_1.2-video_VideoCapability" time="0.010000">
+			<system-out>2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-video_VideoCapability', '``Pass``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']</system-out>
+			<system-err>I am stderr!</system-err>
+		</testcase>
+		<testcase classname="functional_categoryA" name="THIS_IS_A-TEST_1.2-kernel_ConfigVerify" time="0.010000">
+			<failure message="failed message" type="failure">failed log</failure>
+			<system-out>2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-kernel_ConfigVerify', '``Failed``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']</system-out>
+			<system-err>I am stderr!</system-err>
+		</testcase>
+		<testcase classname="functional_categoryA" name="THIS_IS_A-TEST_1.2-logging_AsanCrash" time="0.010000">
+			<error message="block message" type="Blocked">blocked log</error>
+			<system-out>2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-logging_AsanCrash', '``Blocked``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']</system-out>
+			<system-err>I am stderr!</system-err>
+		</testcase>
+	</testsuite>
+</testsuites>
