@@ -1,0 +1,15 @@
+2018-04-23 11:32:49,919 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-ID001', '``36.49 Gbps`` / ``-1 %`` / ``17.845 %``', '``0.0 Gbps`` / ``-1 %`` /``thisshould be ignored``']
+2018-04-23 11:32:49,919 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-ID001', '``35.88 ms`` / ``137.85 ms``', '``0.0 ms`` / ``this should be ignored``']
+2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-ID001', '``PASSED``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']
+2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-ID002', '``Pass``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']
+2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-ID003', '``PaSSing``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']
+2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-ID004', '``success``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']
+2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-ID005', '``FAILED``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']
+2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-ID006', '``faiLure``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']
+2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-ID007', '``Fail``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']
+2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-ID008', '``failing``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']
+2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-ID009', '``BLOCKED``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']
+2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-ID010', '``block``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']
+ 
+
+.

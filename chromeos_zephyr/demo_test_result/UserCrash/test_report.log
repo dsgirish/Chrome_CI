@@ -1,0 +1,8 @@
+-------------------------------------------------------------------------------------------------
+/tmp/test_that_results_blackwall_EhmmV2/results-1-logging_UserCrash                   [  PASSED  ]
+/tmp/test_that_results_blackwall_EhmmV2/results-1-logging_UserCrash/logging_UserCrash [  PASSED  ]
+-------------------------------------------------------------------------------------------------
+Total PASS: 2/2 (100%)
+
+
+Logging the data into test_report.html file.

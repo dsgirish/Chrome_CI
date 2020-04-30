@@ -1,0 +1,573 @@
+# zephyr
+
+Overview
+========
+Python scripts to convert test results to JUnit and upload test results to 
+JIRA/Zephyr through ZAPI. This module only works with Python 2.x.
+For additional information see: https://wiki.ith.intel.com/display/CSIG/Zephyr
+
+Package Dependencies
+====================
+```sh
+junit_xml
+xlsxwriter
+xlrd
+```
+
+Prerequisite
+============
+You will need to set system environment variables as the following:
+```sh
+set JIRAUSER=<user>
+set JIRAPASSWORD=<password>
+set REQUESTS_CA_BUNDLE=<path>/cert/jira.crt
+```
+The certificate is provided in the TeamForge repo, in case of expiration, you 
+can use the following to get the certificate of your JIRA server:
+```sh
+# Get SSL cert of a JIRA server in Windows
+keytool -printcert -sslserver jira.devtools.intel.com:443 -rfc >cert/jira.crt  
+# Get SSL cert of a JIRA server in Linux
+openssl s_client -showcerts -servername jira -connect jira.devtools.intel.com:443 > cacert.pem
+```
+If your certificate somehow does not work, you can disable the SSL verification  
+ of the scripts by option '--disableSSL'.
+
+If you want to point the cert to a different location, please use option --cert  
+ to specify.  
+
+Read more regarding SSL verify process in the following link:
+http://docs.python-requests.org/en/master/user/advanced/..
+
+Mandatory JIRA Fields
+=====================
+In JIRA, some fields are mandatory during ticket creation, so you will need to 
+find out these fields and corresponding database names in JIRA.
+1. In your browser, log on to your JIRA server, and type the following to get a 
+full field list of one JIRA ticket, i.e.,
+https://jira.devtools.intel.com:443/rest/api/2/search?jql=key=EETRACEBIM-3679
+2. On JIRA test issue creation screen, find out the mandatory fields.
+3. In your project config file, specify the values of the mandatory fields for 
+your project, i.e.,
+```sh
+{
+    project: {
+            "jiraConfig" : {
+                "assignee" : {"name" :"username"},
+                "components" : [{"name" :"Validation & Testing"}],
+                "description" : "Test",
+                "priority" : {"name" :"Undecided"},
+                "customfield_11119" : [{"value" : "Linux"}],
+                "customfield_11119 comment" : "Operating System",
+                "customfield_14611" : {"value" :"Private - exclude from release notes"},
+                "customfield_14611 comment" : "doc needed",
+                "customfield_14608" : {"value" :"Internal"},
+                "customfield_14608 comment" : "customer name",
+                "versions" : [{"name" : "N/A"}]
+            }
+    }
+}
+```
+
+Script Usage
+============
+By analyzing test logs, the scripts will convert them into JUnit format, and 
+create new test cases in the JIRA project and add them into current test cycle
+( ZQL filter), or just update the PASS/FAIL/Block status of existing tests in 
+JIRA project without adding new test case into current test cycle(we received 
+such requirement from project teams). A typical usage:
+```sh
+# Convert raw data to junit format
+python "junit_converter.py" -d --config project_config.json --profile demo \
+--log "demo_test_result" --format line --outfile "demo_test_result.xml"
+# Upload data to JIRA/Zephyr, create a new test cycle named as "demo_new_cycle"
+python "zephyr_zapi.py" --url https://jira.devtools.intel.com/ execute \
+--add --create --newCycle -f "demo_test_result.xml" --zql "project = 'NTTG' \
+AND fixVersion = 'VER1' AND cycleName in ('demo_new_cycle')"
+```
+Note:
+    junit_converter.py - Regular expressions are used to identify test logs, 
+                         test cases and test status, and these are specified in
+                          a project config file. In order to pick these 
+                          patterns, "--profile" must be specified. By default, 
+                          the config file is "project_config.json".
+    zephyr_zapi.py     - "--profile" is optional, as you can provide all inputs
+                          through command arguments.
+
+An example of project_config.json:
+```sh
+{
+    "demo" :        {
+                    "### common options ###" : "the following are shared by junit_converter.py and zephyr_zapi.py",
+                    "file" : "demo_output.xml",
+                    "### zephyr_zapi.py options ###" : "the following are only used by zephyr_zapi.py",
+                    "url" : "https://jira.devtools.intel.com/",
+                    "cert" : "cert\\jira.crt",
+                    "disableSSL" : "N",
+                    "newCycle" : "Y",
+                    "ignore" : "N",
+                    "create" : "Y",
+                    "add" : "Y",
+                    "updateLatest" : "Y",
+                    "suite" : "demo_baseline",
+                    "suiteFixVersion" : "VER1",
+                    "startDate" : "04/Nov/2018",
+                    "endDate" : "06/Nov/2018",
+                    "build" : "19812013",
+                    "environment" : "Linux",
+                    "description" : "Test Cycle Demo",
+                    "jiraConfig" : {
+                        "project" : "NTTG",
+                        "fixVersion" : "VER1",
+                        "cycleName" : "demo_New_Cycle_verify",
+                        "description" : "Test"
+                    },
+                    "### junit_converter.py options ###" : "the following are only used by junit_converter.py",
+                    "log" : "demo_test_result",
+                    "format" : "line",
+                    "logFilePattern Comment" : "<Path>\\demo_test_result\\demo-test\\demo_funtional_test.log",
+                    "logFilePattern" : ".*\\\\(\\S+)\\\\demo_([a-zA-Z0-9_]*)\\.log$",
+                    "logFilePatternTests": [
+                      {
+                        "input": "C:\\this\\is\\a\\test\\demo_teST_ab0123.log",
+                        "expectedResult1": "test",
+                        "expectedResult2": "teST_ab0123"
+                      },
+                      {
+                        "input": "C:\\this\\is\\a\\test\\demo_te-ST_ab0123.log",
+                        "expectedResult1": "None",
+                        "expectedResult2": "None"
+                      }
+                    ],
+                    "testCasePattern Comment" : "DEMO-THIS_IS_A-TEST_1.2-ID001",
+                    "testCasePattern" : ".*DEMO-([a-zA-Z0-9_\\-\\.]*)\\'.*",
+                    "testCasePatternTests": [
+                      {
+                        "input": "DEMO-THIS_IS_A-TEST_1.2-ID001'",
+                        "expectedResult1": "THIS_IS_A-TEST_1.2-ID001"
+                      },
+                      {
+                        "input": "DEMo-THIS_IS_A-TEST_1.2-ID001",
+                        "expectedResult1": "None"
+                      }
+                    ],
+                    "passPattern" : "(PASSED|passing|Pass|Success)",
+                    "passPatternTests": [
+                      {
+                        "input": "passed",
+                        "expectedResult1": "passed"
+                      },
+                      {
+                        "input": "bypassing",
+                        "expectedResult1": "passing"
+                      }
+                    ],
+                    "failPattern" : "(Failed|failing|Failure|fail)",
+                    "failPatternTests": [
+                      {
+                        "input": "failed",
+                        "expectedResult1": "failed"
+                      },
+                      {
+                        "input": "failing",
+                        "expectedResult1": "failing"
+                      }
+                    ],
+                    "blockPattern" : "(Blocked|block)",
+                    "blockPatternTests": [
+                      {
+                        "input": "Blocked",
+                        "expectedResult1": "Blocked"
+                      },
+                      {
+                        "input": "blocked",
+                        "expectedResult1": "blocked"
+                      }
+                    ],
+                    "skipPattern" : "(Skipped|skipping|skip|no run|not executed|n/a)",
+                    "skipPatternTests": [
+                      {
+                        "input": "skip",
+                        "expectedResult1": "skip"
+                      },
+                      {
+                        "input": "no run",
+                        "expectedResult1": "no run"
+                      }
+                    ]
+    }
+}
+```
+
+With the above config file, you can use brief commands, with all other 
+arguments by default or specified in the project config file:
+```sh
+# Convert raw data to junit format
+python "junit_converter.py" --profile demo
+# Upload data to JIRA/Zephyr, create a new test cycle named as "demo_new_cycle"
+python "zephyr_zapi.py" --profile demo execute
+```
+
+Sometimes, for automation purpose, a typical zephyr_zapi.py command is like the
+ following:
+```sh
+# Upload data to JIRA/Zephyr, create a new test cycle named as "demo_new_cycle" 
+# A common version for automation like Jenkins job, with frequently changed
+# options specified in command, and rests are from the config file
+python "zephyr_zapi.py" -d --profile demo execute --project 'NTTG' \
+--fixversion 'VER1' --cyclename 'demo_new_cycle'
+```
+
+Project Config Details
+======================
+```sh
+{
+    "description" :  "This config file is to provide project specific information when uploading test results to JIRA/Zephyr.",
+    "project"    :  {
+                    "### common options ###" : "the following are shared by junit_converter.py and zephyr_zapi.py",
+                    "file" : "<path to JUnit file>",
+                    "### zephyr_zapi.py options ###" : "the following are only used by zephyr_zapi.py",
+                    "url comment" : "Link to JIRA server,options are https://jira.devtools.intel.com/,https://jira-jdc-t2.devtools.intel.com/,https://jira.devtools.intel.com/",
+                    "url" : "https://jira.devtools.intel.com/",
+                    "cert comment" : "Note you must set system environment variable REQUESTS_CA_BUNDLE to the following path before running zephyr_zapi.py",
+                    "cert" : "<path to JIRA server certificate>",
+                    "disableSSL comment" : "Disable SSL Verify Error",
+                    "disableSSL" : "Y",
+                    "newCycle comment" : "Create a new test cycle if enabled, same as option --newCycle",
+                    "newCycle" : "Y",
+                    "ignore comment" : "Ignore test cases not listed in the specified test cycle if enabled, same as option --ignore",
+                    "ignore" : "Y",
+                    "create comment" : "Create new tests and add to the specified test cycle if enabled, same as option --create",
+                    "create" : "Y",
+                    "add comment" : "Add existing tests to the specified test cycle if enabled, same as option --add",
+                    "add" : "Y",
+                    "updateLatest comment" : "Update the latest record if multiple entries exist for the same test name if enabled, same as option --updateLatest",
+                    "updateLatest" : "Y",
+                    "suite comment" : "Add/clone tests from a test suite, providing the value for option --suite",
+                    "suite" : "demo_new_cycle_ww4301",
+                    "suiteFixVersion comment" : "The fixVersion of a test suite, same as option --suitefixversion",
+                    "suiteFixVersion" : "VER1",
+                    "test cycle information: comment" : "startDate, endDate, build, environment, description",
+                    "startDate" : "04/Nov/2018",
+                    "endDate" : "06/Nov/2018",
+                    "build" : "19812013",
+                    "environment" : "Linux",
+                    "description" : "Cycle for scripts verification",
+                    "jiraConfig comment" : "Mandatory fields as defined by JIRA project, with default values when creating a new JIRA test",
+                    "jiraConfig" : {
+                        "project" : "<project key>",
+                        "fixVersion" : "<version name>",
+                        "cycleName" : "<test cycle name>",
+                        "assignee" : {"name":"assignee"},
+                        "components": [{"name":"component name"}],
+                        "description": "test description",
+                        "priority": {"name":"test priority"},
+                        "customfield_11119": [{"value": "custom filed as defined by JIRA project"}],
+                        "customfield_11119 comment" : "Operating System",
+                        "customfield_14611": {"value":"custom filed as defined by JIRA project"},
+                        "customfield_14611 comment" : "doc needed",
+                        "customfield_14608": {"value":"custom filed as defined by JIRA project"},
+                        "customfield_14608 comment" : "customer name",
+                        "versions": [{"name": "affects version"}]
+                    },
+                    "### junit_converter.py options ###" : "the following are only used by junit_converter.py",
+                    "log" : "<path to test log folder>",
+                    "format" : "Test log format,options are line|file",
+                    "logFilePattern comment" : "Example of log files",
+                    "logFilePattern" : "Regular Expression to identify test log files, as well as test suite name and test class name if possible",
+                    "logFilePatternTests comment" : "Test inputs and expected restuls to verify the regular expressions are working properly",
+                    "logFilePatternTests" : [{"input":"Path to a log file", "expected":"log file name"}],
+                    "testCasePattern comment" : "Example of test logs",
+                    "testCasePattern" : "Regular Expression to identify test case names",
+                    "testCasePatternTests" : [{"input":"Example of test logs", "expected":"test case name"}],
+                    "testStatusPattern comment" : "Regular Expression to identify test status, case insensitive",
+                    "passPattern" : "(PASSED|passing|Pass|Success)",
+                    "passPatternTests" : [{"input":"passed", "expected":"passed"}],
+                    "failPattern" : "(Failed|failing|Failure|fail)",
+                    "failPatternTests" : [{"input":"failed", "expected":"failed"}],
+                    "blockPattern" : "(Blocked|block)",
+                    "blockPatternTests" : [{"input":"Blocked", "expected":"Blocked"}],
+                    "skipPattern" : "(Skipped|skipping|skip|no run|not executed|n/a)",
+                    "skipPatternTests" : [{"input":"skip", "expected":"skip"}]
+    }
+}
+```
+
+ZQL format
+==========
+JIRA test cycle information can be specified in three ways, the priority is 
+--zql > (--project --fixVersion --cycleName) > project config
+1. --zql, the ZQL format used in this set of scripts is fixed as the following:  
+```sh
+--zql "project = "ProjectKey" AND fixVersion = 'VER 123' AND cycleName in ('cycle name')"  
+```
+2. Or you can replace them with separate arguments:
+```sh
+--project "ProjectKey" --fixVersion 'VER 123' --cycleName 'cycle name'
+```
+3. Or specify the information in the project config file:
+```sh
+    "jiraConfig" : {
+        "project" : "<project key>",
+        "fixVersion" : "<version name>",
+        "cycleName" : "<test cycle name>"
+        }
+```
+
+Test Set Options
+================
+When uploading test results to JIRA/Zephyr, usually we have three sets of test 
+cases:
+1. Test cases that are already in JIRA, and part of the test cycle.
+2. Test cases that are already in JIRA, but not part of the test cycle.
+3. Test cases that are totally new(not in JIRA).
+
+The scripts will take the following actions accordingly:
+1. The results of the test set 1 will be uploaded to the test cycle by default,
+   but "--ignore" should be used explicitly if any test cases of the test set 2
+   or the test set 3 exist, otherwise the scripts will exit and users will be 
+   prompted.
+2. "--add" should be used explicitly to add the test cases in the test set 2 to
+   the test cycle, and upload the test results.
+3. "--create" should be used explicitly to create new test cases in the test 
+   set 3, add to the test cycle, and upload the test results.
+
+As a conclusion, "--add --create" are recommended to use always, and "--ignore" 
+can be used during test case development when test cases are not finalized.
+
+Note if "--ignore --add --create" are used altogether, it acts the same as 
+"--ignore".
+
+Command Options
+===============
+```sh
+# junit_converter.py
+python junit_converter.py -h
+usage: junit_converter.py [-h] [-d] [-v] [-c CONFIG] -p PROFILE [-o OUTFILE]
+                          [--log LOG] [--format {line,file}]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d, --debug           Debug mode
+  -v, --verbose         Verbose mode
+  -c CONFIG, --config CONFIG
+                        Project config file, project_config.json by default
+  -p PROFILE, --profile PROFILE
+                        Choose the profile from the project config file
+  -o OUTFILE, --outFile OUTFILE, --outfile OUTFILE
+                        JUnit report output file, test_output.xml by default
+  --log LOG             Folder path that contains test logs, test_result by
+                        default
+  --format {line,file}  Format of log files, line by default
+```
+
+```sh
+# zephyr_zapi.py
+python zephyr_zapi.py -h
+usage: zephyr_zapi.py [-h] [-d] [-v] [--url URL] [--cert CERT]
+                      [--disableSSL DISABLESSL] [--config CONFIG] [-p PROFILE]
+                      {execute} ...
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d, --debug           Debug mode
+  -v, --verbose         Verbose mode
+  --url URL             JIRA server URL, https://jira.devtools.intel.com by
+                        default
+  --cert CERT           JIRA server certificate, use system environment
+                        variable REQUESTS_CA_BUNDLE by default
+  --disableSSL DISABLESSL, --disablessl DISABLESSL
+                        Disable SSL Verify
+  --config CONFIG       Project config file, project_config.json by default
+  -p PROFILE, --profile PROFILE
+                        Choose the profile from the project config file
+
+subcommands:
+  desc
+
+  {execute}             Addtional help
+    execute             Execute test
+```
+
+```sh
+# zephyr_zapi.py
+usage: zephyr_zapi.py execute [-h] [-f FILE] [--zql ZQL] [--project PROJECT]
+                              [--fixVersion FIXVERSION]
+                              [--cycleName CYCLENAME] [--newCycle]
+                              [--suite SUITE]
+                              [--suiteFixVersion SUITEFIXVERSION]
+                              [--updateLatest] [--startDate STARTDATE]
+                              [--endDate ENDDATE] [--build BUILD]
+                              [--environment ENVIRONMENT]
+                              [--description DESCRIPTION] [--ignore] [--add]
+                              [--create] [--updateComment]
+                              [--maxRetry MAXRETRY] [--timeout TIMEOUT]
+                              [--timeToAddATest TIMETOADDATEST]
+                              [--slicerToAddTests SLICERTOADDTESTS]
+                              [--slicerToUpdateExecutions SLICERTOUPDATEEXECUTIONS]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f FILE, --file FILE  JUnit test result file, test_result.xml by default
+  --zql ZQL             ZQL query
+  --project PROJECT     Project key in JIRA
+  --fixVersion FIXVERSION, --fixversion FIXVERSION
+                        Fix version name in JIRA
+  --cycleName CYCLENAME, --cyclename CYCLENAME
+                        Test cycle name in JIRA
+  --newCycle, --newcycle
+                        Create a new test cyle
+  --suite SUITE         Add/clone tests from a test suite
+  --suiteFixVersion SUITEFIXVERSION, --suitefixversion SUITEFIXVERSION
+                        The fixVersion of a test suite
+  --updateLatest, --updatelatest
+                        Update the latest record if multiple entries exist for
+                        the same test name
+  --startDate STARTDATE, --startdate STARTDATE
+                        Test cycle start date
+  --endDate ENDDATE, --enddate ENDDATE
+                        Test cycle end date
+  --build BUILD         Test cycle build information
+  --environment ENVIRONMENT
+                        Test cycle environment information
+  --description DESCRIPTION
+                        Test cycle description
+  --ignore              Ignore test cases not listed in the specified test
+                        cycle
+  --add                 Add existing tests to the specified test cycle
+  --create              Create new tests and add to the specified test cycle
+  --updateComment, --updatecomment
+                        Update the comments for tests
+  --maxRetry MAXRETRY, --maxretry MAXRETRY
+                        Maximum retries for one API call, range from 5 to 300,
+                        30 by default
+  --timeout TIMEOUT     Time interval between API calls, ranges from 5 to 50
+                        seconds, 10 by default
+  --timeToAddATest TIMETOADDATEST, -tt TIMETOADDATEST
+                        Estimated average time to add a test to a test cycle,
+                        ranges from 1 to 10 seconds, 4 by default
+  --slicerToAddTests SLICERTOADDTESTS, -st SLICERTOADDTESTS
+                        Test count to add tests to a test cycle by groups,
+                        ranges from 20 to 500 tests, 50 by default
+  --slicerToUpdateExecutions SLICERTOUPDATEEXECUTIONS, -se SLICERTOUPDATEEXECUTIONS
+                        Execution count to update status to a test cycle by
+                        groups, ranges from 500 to 2000 executions, 1000 by
+                        default
+```
+
+Escaped Characters
+==================
+```sh
+Characters to scripts     Windows: Use " " pair     Linux: Use $' ' pair     Comment     
+"                         \\"""                     \\"                      Zephyr scripts read it as \" and convert it to "     
+'                         \'                        \\\'                     Zephyr scripts read it as \' and convert it to '     
+(                         (                         (                                    
+)                         )                         )                                    
+```
+Example:  
+Project: PROJ  
+Version: 1.5.2 (Beta-s) ww05'19 "test"  
+Cycle: demo ww05'19 (beta) "test"  
+
+Windows: use " " pair when whites pace characters are included  
+```sh
+python zephyr_zapi.py -d -p demo execute --project "PROJ" --fixVersion "1.5.2 (Beta-s) ww05\'19 \\"""test\\"""" \
+--cycleName "demo ww05\'19 (beta) \\"""test\\""""
+python zephyr_zapi.py -d -p demo execute --zql \
+"project = PROJ and fixVersion = '1.5.2 (Beta-s) ww05\'19 \\"""test\\"""' and cycleName in ('demo ww05\'19 (beta) \\"""test\\"""')"
+```
+Linux: use $' ' pair when white space characters are included  
+```sh
+python zephyr_zapi.py -d -p demo execute --project 'PROJ' --fixVersion $'1.5.2 (Beta-s) ww05\\\'19 \\"test\\"' \
+--cycleName $'demo ww05\\\'19 (beta) \\"test\\"'
+python zephyr_zapi.py -d -p demo execute --zql \
+$'project = PROJ and fixVersion = "1.5.2 (Beta-s) ww05\\\'19 \\"test\\"" and cycleName in ("demo ww05\\\'19 (beta) \\"test\\"")'
+```
+Note: JIRA/Zephyr allows versions, test cycle names to start with white space 
+characters. To avoid confusion, this python scripts don't support such names 
+starting with white space characters.
+
+Script Testing
+==============
+This part is about the testing against the scripts.
+"junit_convert.py" conducts unit test for the regular expressions, the test 
+cases are specified in the project_config.json.
+Taking "logFilePattern" as an example, the script takes the 
+"logFilePatternTests" to verify if the regular expression works as expected. 
+Note only for this pattern, we have two groups of results, group1
+(expectedResult1) is to identify the test suite, group2(expectedResult2) is to 
+identify the exact test log file.
+```sh
+"logFilePattern" : ".*\\\\(\\S+)\\\\demo_([a-zA-Z0-9_]*)\\.log$",
+"logFilePatternTests": [
+  {
+    "input": "C:\\this\\is\\a\\test\\demo_teST_ab0123.log",
+    "expectedResult1": "test",
+    "expectedResult2": "teST_ab0123"
+  },
+  {
+    "input": "C:\\this\\is\\a\\test\\demo_te-ST_ab0123.log",
+    "expectedResult1": "None",
+    "expectedResult2": "None"
+  }
+]
+```
+"zephyr_zapi.py" are tested with the input from "test/demo_test_result" folder,
+ which are the test log files used by profile demo, among the total 40 test 
+cases:  
+1. 10 test cases are considered as new and should be created
+2. 30 test cases are already in JIRA:
+   a. 20 of them will be cloned from a testsuite
+   b. 10 of them will be added to the new test cycle
+
+Test steps repeated for each commit:
+1. Upload data to JIRA/Zephyr, create a new test cycle named as 
+   "demo_New_Cycle_verify".
+   a. Create 10 new test cases and add the 40 test cases to the new test cycle.
+   b. Updated the execution status of the new cycle.
+2. Delete the new test cycle "demo_New_Cycle_verify".  
+3. Delete the 10 new test cases.  
+
+Server Limitations
+==================
+1. The summary of a jira ticket must be less than 255 characters.
+
+Known Server Issues
+===================
+1. JIRA server sometimes returns SSL Certify Error, the workaround is to add 
+"verify = False" to all requests.
+2. JIRA server sometimes cannot return any execution results from old test 
+cycles, but no issue with recent cycles. The fix is to request JIRA IT to 
+reindex.
+3. JIRA server sometimes does not return the full test execution results of a 
+test cycle, which was added a bunch of tests as new executions, even when 
+jobprogress call shows the addTestsToCycle call is completed.
+The workaround is to wait and check if it returns the exact number of test 
+executions. 
+4. Zephyr/ZAPI can update test step results without permission check. This 
+issue has been reported to IT, JS-16882, Zephyr confirmed it's a known issue.  
+5. Zephyr job will not complete when cloning test cases from an empty test cyle  
+ to another cycle, a workaround will be added in method ZAPI.addTestsToCycle.  
+
+Terminologies
+=============
+```sh
+Term                 Explanation
+Test Issue           A regular JIRA ticket, and the issue type is "test". 
+                     Usually one test ticket represents one test case.
+Test Cycle           Test cycle is maintained by the JIRA plugin "Zephyr for 
+                     JIRA", a test cycle consists of many test cases.
+Test Execution       If a test is added to a test cycle, then the instance of 
+                     the test in the test cycle is one test execution. A test 
+                     cycle has many test executions, and a test case can have 
+                     many test executions in different test cycles.
+Test Step            A test issue can have many test steps.
+Test Step Execution  A test execution can have many corresponding test step 
+                     executions.
+```
+
+Reference
+=========
+1. Zephyr for JIRA API: https://getzephyr.docs.apiary.io/
+2. JIRA API: https://developer.atlassian.com/server/jira/platform/rest-apis/
+

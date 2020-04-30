@@ -1,0 +1,101 @@
+{
+    "description" : "This config file is to provide project specific information when uploading test results to JIRA/Zephyr.",
+    "demo" :        {
+                    "url" : "https://jira.devtools.intel.com/",
+                    "cert" : "cert\\jira.crt",
+                    "disableSSL" : "N",
+                    "newCycle" : "Y",
+                    "ignore" : "N",
+                    "create" : "Y",
+                    "add" : "Y",
+                    "updateLatest" : "Y",
+                    "suite" : "",
+                    "suiteFixVersion" : "",
+                    "log" : "demo_test_result",
+                    "file" : "demo_output.xml",
+                    "format" : "line",
+                    "encoding" : "gbk",
+                    "startDate" : "18/Feb/2020",
+                    "endDate" : "18/Feb/2020",
+                    "build" : "19812013",
+                    "environment" : "ChromeOS",
+                    "description" : "Test Cycle Demo",
+                    "logFilePattern comment" : "<Path>\\demo_test_result\\demo-test\\demo_funtional_test.log",
+                    "logFilePattern" : ".*\\\\(\\S+)\\\\demo_([a-zA-Z0-9_]*)\\.log$",
+                    "logFilePatternTests": [
+                      {
+                        "input": "C:\\this\\is\\a\\test\\demo_teST_ab0123.log",
+                        "expectedResult1": "test",
+                        "expectedResult2": "teST_ab0123"
+                      },
+                      {
+                        "input": "C:\\this\\is\\a\\test\\demo_te-ST_ab0123.log",
+                        "expectedResult1": "None",
+                        "expectedResult2": "None"
+                      }
+                    ],
+                    "testCasePattern comment" : "DEMO-THIS_IS_A-TEST_1.2-ID001",
+                    "testCasePattern" : ".*DEMO-([^']*)\\'.*",
+                    "testCasePatternTests": [
+                      {
+                        "input": "DEMO-THIS_IS_A-TEST_1.2-ID001'",
+                        "expectedResult1": "THIS_IS_A-TEST_1.2-ID001"
+                      },
+                      {
+                        "input": "DEMo-THIS_IS_A-TEST_1.2-ID001",
+                        "expectedResult1": "None"
+                      }
+                    ],
+                    "passPattern" : "(PASSED|passing|Pass|Success)",
+                    "passPatternTests": [
+                      {
+                        "input": "passed",
+                        "expectedResult1": "passed"
+                      },
+                      {
+                        "input": "bypassing",
+                        "expectedResult1": "passing"
+                      }
+                    ],
+                    "failPattern" : "(Failed|failing|Failure|fail)",
+                    "failPatternTests": [
+                      {
+                        "input": "failed",
+                        "expectedResult1": "failed"
+                      },
+                      {
+                        "input": "failing",
+                        "expectedResult1": "failing"
+                      }
+                    ],
+                    "blockPattern" : "(Blocked|block)",
+                    "blockPatternTests": [
+                      {
+                        "input": "Blocked",
+                        "expectedResult1": "Blocked"
+                      },
+                      {
+                        "input": "blocked",
+                        "expectedResult1": "blocked"
+                      }
+                    ],
+                    "skipPattern" : "(Skipped|skipping|skip|no run|not executed|n/a)",
+                    "skipPatternTests": [
+                      {
+                        "input": "skip",
+                        "expectedResult1": "skip"
+                      },
+                      {
+                        "input": "no run",
+                        "expectedResult1": "no run"
+                      }
+                    ],
+                    "jiraConfig" : {
+                        "project" : "OTCBACHRON",
+                        "fixVersion" : "VER1",
+                        "cycleName" : "demo_new_cycle_verify",
+                        "description" : "Test",
+                        "assignee" : {"name":"dsgirish"}
+                    }
+    }
+}

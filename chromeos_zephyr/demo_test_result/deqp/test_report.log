@@ -1,0 +1,14 @@
+---------------------------------------------------------------------------------------------------------------------
+/tmp/test_that_results_blackwall_JA1rYD/results-1-graphics_dEQP.gles31-master                             [  FAILED  ]
+/tmp/test_that_results_blackwall_JA1rYD/results-1-graphics_dEQP.gles31-master                               WARN: Autotest client was disconnected: Timeout encountered: /usr/bin/ssh -a -x  -o ControlPath=/tmp/ssh-master_dsgirish/_autotmp_6Lk7CD/socket -o Protocol=2 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -o ConnectTimeout=30 -o ServerAliveInterval=900 -o ServerAliveCountMax=3 -o ConnectionAttempts=4 -l root -p 22 10.66.179.101 "export LIBC_FATAL_STDERR_=1; test -x /usr/bin/logger && /usr/bin/logger --id=\$\$ --tag=autotest \"from [execute_control|execute_section|_execute_daemon] ssh_run: /usr/local/autotest/bin/autotestd_monitor /usr/local/tmp/autoserv-Tq1Y2u 0 0\"; /usr/local/autotest/bin/autotestd_monitor /usr/local/tmp/autoserv-Tq1Y2u 0 0"
+/tmp/test_that_results_blackwall_JA1rYD/results-1-graphics_dEQP.gles31-master/graphics_dEQP.gles31-master [  FAILED  ]
+/tmp/test_that_results_blackwall_JA1rYD/results-1-graphics_dEQP.gles31-master/graphics_dEQP.gles31-master   FAIL: Failed: on jasperlake 1/37746 tests failed.
+/tmp/test_that_results_blackwall_JA1rYD/results-1-graphics_dEQP.gles31-master/graphics_dEQP.gles31-master   NotSupported                                                                                            1221
+/tmp/test_that_results_blackwall_JA1rYD/results-1-graphics_dEQP.gles31-master/graphics_dEQP.gles31-master   Pass                                                                                                    36482
+/tmp/test_that_results_blackwall_JA1rYD/results-1-graphics_dEQP.gles31-master/graphics_dEQP.gles31-master   QualityWarning                                                                                          42
+/tmp/test_that_results_blackwall_JA1rYD/results-1-graphics_dEQP.gles31-master/graphics_dEQP.gles31-master   Unknown                                                                                                 1
+---------------------------------------------------------------------------------------------------------------------
+Total PASS: 0/2 (0%)
+
+
+Logging the data into test_report.html file.

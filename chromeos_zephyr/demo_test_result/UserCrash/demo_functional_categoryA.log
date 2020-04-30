@@ -1,0 +1,5 @@
+2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-ID001', '``PASSED``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']
+2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-logging_UserCrash', '``Pass``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']
+2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-video_VideoCapability', '``Pass``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']
+2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-kernel_ConfigVerify', '``Failed``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']
+2018-04-23 11:32:49,920 - report_generator - DEBUG - ['DEMO-THIS_IS_A-TEST_1.2-logging_AsanCrash', '``Blocked``', '``Existing issues in jira``', '``demo``','``PerformanceBenchmark value not present for this process``']
