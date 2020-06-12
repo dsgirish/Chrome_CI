@@ -27,7 +27,7 @@ def main():
     projectConfig = conf.GetProjectConfig(args.config)
     args = conf.ApplyProjectConfigToArgs(args, projectConfig)
     (username, password) = conf.GetUserPassword(args.profile, projectConfig)
-    conf.SetupEnvironment(args.cert)
+    #conf.SetupEnvironment(args.cert)
     zapi = ZAPI(args.url, username, password, args.disableSSL, args.cert, args.maxRetry, args.timeout, \
         args.timeToAddATest, args.slicerToAddTests, args.slicerToUpdateExecutions)
     args.func(args, zapi, projectConfig)

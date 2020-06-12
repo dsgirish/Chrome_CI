@@ -50,7 +50,7 @@ def GetUserPassword(profile=None, projectConfig=None):
     #username = os.getenv('JIRAUSER')
     #password = os.getenv('JIRAPASSWORD')
     username = "dsgirish"
-    password = "Bangalore#123"
+    password = "Bangalore$123"
     #The follow option to read username/password from the config is disabled
     if profile and False:
         if profile in projectConfig:
